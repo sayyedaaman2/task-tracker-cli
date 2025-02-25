@@ -1,0 +1,25 @@
+{
+  "name": "task-tacker-cli",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sayyedaaman2/task-tracker-cli.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sayyedaaman2/task-tracker-cli/issues"
+  },
+  "homepage": "https://github.com/sayyedaaman2/task-tracker-cli#readme",
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  }
+}

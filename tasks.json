@@ -1,0 +1,38 @@
+[
+  {
+    "id": "10a905dc-d139-49c0-9ed4-a9a34d5b078e",
+    "title": "Build web-site",
+    "description": "using of react.js",
+    "status": "in progress"
+  },
+  {
+    "id": "5d7ebd5d-2711-4917-9293-c72ea1c00981",
+    "title": "Next.js app",
+    "description": "Next.js have the SSR method.",
+    "status": "idle"
+  },
+  {
+    "id": "5168c043-2146-4653-b8b3-e131fc7b3931",
+    "title": "Test",
+    "description": "",
+    "status": "idle"
+  },
+  {
+    "id": "063bcf40-d198-4063-82a4-6a98899a54fa",
+    "title": "task",
+    "description": "",
+    "status": "idle"
+  },
+  {
+    "id": "642cea53-7ce2-41bd-a4de-6ffee4df3f69",
+    "title": "test2",
+    "description": "222",
+    "status": "in progress"
+  },
+  {
+    "id": "f209e893-9fdd-479b-9add-08b504a2f8e1",
+    "title": "Node.js",
+    "description": "Node.js fs module testing",
+    "status": "completed"
+  }
+]
