@@ -1,275 +1,165 @@
-const fs = require('node:fs');
+const fs = require("fs");
+const path = require("path");
 const readline = require('node:readline');
-const { stdin: input, stdout: output } = require('node:process');
-const { randomUUID } = require('node:crypto');
-const FILE_PATH = "tasks.json";
+const {stdin:input, stdout:output} = require('node:process')
+const TASKS_FILE = path.join(__dirname, "tasks.json");
+
 
 const rl = readline.createInterface({
-    input, output
+    input , output
 })
 
-function createFile(answer) {
-    answer = answer.toLowerCase();
-    if (answer == "yes") {
-        const defaultData = {
-            id: 0,
-            title: "Task 1",
-            description: "This is a description",
-            status: "idle"
-        }
-        fs.writeFile(FILE_PATH, JSON.stringify(defaultData, null, 2), { encoding: 'utf8' }, (err, data) => {
-            if (err) {
-                console.error(`⚠️ Unable to Create new ${FILE_PATH} file !`);
-            } else {
-                console.log(`SuccessFully Created new File.`)
-            }
-            rl.close();
-        })
+
+// Ensure tasks.json exists
+if (!fs.existsSync(TASKS_FILE)) {
+  fs.writeFileSync(TASKS_FILE, JSON.stringify([]));
+}
+
+function loadTasks() {
+  return JSON.parse(fs.readFileSync(TASKS_FILE, "utf8"));
+}
+
+function saveTasks(tasks) {
+  fs.writeFileSync(TASKS_FILE, JSON.stringify(tasks, null, 2));
+}
+
+function addTask(description) {
+    if(!description){
+        console.error(`Description is requied!`);
+        promptUser();
     }
-    else if (answer == 'no') {
-        console.log(`File creation cancelled.`)
-        process.exit(0);
-    } else {
-        console.log("⚠️ Invalid input. Please enter 'yes' or 'no'.");
-        rl.question(`Do you want to create ${FILE_PATH} file? (yes/no) `, createFile);
-    }
-
+  const tasks = loadTasks();
+  const newTask = {
+    id: tasks.length + 1,
+    description,
+    status: "todo",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+  tasks.push(newTask);
+  saveTasks(tasks);
+  console.log(`Task added successfully (ID: ${newTask.id})`);
 }
 
-fs.readFile(FILE_PATH, { encoding: 'utf8' }, (err, data) => {
-    if (err) {
-        console.error(`Unable to Read ${FILE_PATH} `);
-        rl.question(`Do you want to create ${FILE_PATH} file ? (yes/no) `, createFile)
-    }
-    else {
-        console.log(`Successfully read ${FILE_PATH}`)
-        showMenu();
-    }
-
-})
-
-function viewTask() {
-    fs.readFile(FILE_PATH, { encoding: "utf8" }, (err, data) => {
-        if (err) {
-            console.error(`⚠️ Some error occurred while viewing data:`, err);
-        } else {
-            let tasks = [];
-
-            try {
-                tasks = JSON.parse(data); // Parse tasks from file
-            } catch (error) {
-                console.error("⚠️ Error parsing tasks data.");
-            }
-
-            if (tasks.length > 0) {
-                console.log('\nTask List:');
-                console.table(tasks); // Display tasks in table format
-            } else {
-                console.log("\nNo tasks available.");
-            }
-            showMenu(); // Return to menu after viewing tasks
-        }
-    });
+function updateTask(id, description) {
+  const tasks = loadTasks();
+  const task = tasks.find((task) => task.id === id);
+  if (task) {
+    task.description = description;
+    task.updatedAt = new Date().toISOString();
+    saveTasks(tasks);
+    console.log("Task updated successfully.");
+  } else {
+    console.log("Task not found.");
+  }
 }
 
-function addTask() {
-    rl.question('Write Title :-> ', (title) => {
-
-        if (title.trim() === "") {
-            console.error("⚠️ Title field is required!");
-            addTask();
-
-        } else {
-
-            rl.question('Write Description :->', (description) => {
-
-                const newTask = {
-                    id: randomUUID(),
-                    title,
-                    description,
-                    status: 'idle'
-                }
-                fs.readFile(FILE_PATH, { encoding: 'utf8' }, (err, data) => {
-                    let tasks = [];
-                    if (!err && data) {
-                        try {
-                            tasks = JSON.parse(data); // Parse existing tasks
-
-                            if (!Array.isArray(tasks)) { // Ensure tasks is an array
-                                tasks = [];
-                            }
-                        } catch (error) {
-                            console.error("⚠️ Error parsing JSON. Resetting tasks list.");
-                            tasks = [];
-                        }
-                    }
-                    tasks.push(newTask);
-
-                    fs.writeFile(FILE_PATH, JSON.stringify(tasks, null, 2), "utf8", (err) => {
-                        if (err) {
-                            console.error(`⚠️ Error saving task : `, err);
-                        } else {
-                            console.log(`✅ Task added successfully.`)
-                        }
-                        showMenu();
-                    })
-                })
-            }
-
-            )
-        }
-
-    })
+function deleteTask(id) {
+  let tasks = loadTasks();
+  const initialLength = tasks.length;
+  tasks = tasks.filter((task) => task.id !== id);
+  if (tasks.length < initialLength) {
+    saveTasks(tasks);
+    console.log("Task deleted successfully.");
+  } else {
+    console.log("Task not found.");
+  }
 }
 
-
-
-function updateTaskStatus() {
-    // Read existing tasks
-    fs.readFile(FILE_PATH, { encoding: 'utf8' }, (err, data) => {
-        if (err) {
-            console.error("⚠️ Unable to read tasks:", err);
-            rl.close();
-            return;
-        }
-
-        let tasks = [];
-        try {
-            tasks = JSON.parse(data); // Parse tasks data
-        } catch (error) {
-            console.error("⚠️ Error parsing tasks. Resetting tasks list.");
-            tasks = [];
-        }
-
-        // If no tasks are available, show a message and exit
-        if (tasks.length === 0) {
-            console.log("No tasks available to update.");
-            rl.close();
-            return;
-        }
-
-        // Display the tasks
-        console.log("\nCurrent Tasks:");
-        tasks.forEach((task, index) => {
-            console.log(`${index + 1}. ${task.title} - ${task.status}`);
-        });
-
-        // Ask for task number to update
-        rl.question('\nEnter the task number to update status: ', (taskNumber) => {
-            const taskIndex = parseInt(taskNumber) -1;
-            if (taskIndex < 0 || taskIndex >= tasks.length) {
-                console.log("⚠️ Invalid task number.");
-                rl.close();
-                return;
-            }
-
-            // Ask for new status
-            rl.question('Enter new status (idle, in progress, completed): ', (status) => {
-                // Validate status input
-                const validStatuses = ['idle', 'in progress', 'completed'];
-                if (!validStatuses.includes(status)) {
-                    console.log("⚠️ Invalid status.");
-                    rl.close();
-                    return;
-                }
-
-                // Update task status
-                tasks[taskIndex].status = status;
-
-                // Save the updated tasks back to the file
-                fs.writeFile(FILE_PATH, JSON.stringify(tasks, null, 2), 'utf8', (err) => {
-                    if (err) {
-                        console.error("⚠️ Error saving updated task:", err);
-                    } else {
-                        console.log(`✅ Task status updated successfully!`);
-                        showMenu();
-                    }
-                    // rl.close();
-                });
-            });
-        });
-    });
+function markTask(id, status) {
+  const tasks = loadTasks();
+  const task = tasks.find((task) => task.id === id);
+  if (task) {
+    task.status = status;
+    task.updatedAt = new Date().toISOString();
+    saveTasks(tasks);
+    console.log(`Task marked as ${status}.`);
+  } else {
+    console.log("Task not found.");
+  }
 }
 
-
-function deleteTask() {
-    fs.readFile(FILE_PATH, { encoding: 'utf8' }, (err, data) => {
-        if (err) {
-            console.error(`⚠️ Some error occured while viewing data:`, err);
-
-        } else {
-            let tasks = [];
-
-            try {
-                tasks = JSON.parse(data);
-            } catch (error) {
-                console.error(`⚠️ Error parsing tasks data`);
-            }
-
-            if (tasks.length > 0) {
-                console.log("\n Task List:");
-                tasks.forEach((task, index) => {
-                    console.log(`${index + 1}. ${task.title} - ${task.status}`);
-                });
-                rl.question('Enter the task number to delete : ', (taskNumber) => {
-                    const index = parseInt(taskNumber) -1;
-
-                    if (index >= 0 && index < tasks.length) {
-                        const removedTask = tasks.splice(index, 1);
-
-                        fs.writeFile(FILE_PATH, JSON.stringify(tasks, null, 2), "utf8", (err) => {
-                            if (err) {
-                                console.error("⚠️ Error saving updaed tasks : ", err);
-                            } else {
-                                console.log(`✅ Task ${removedTask[0].title} deleted successfully!`);
-                            }
-                            showMenu();
-                        })
-                    } else {
-                        console.log("⚠️ Invalid task number. Try again");
-                        showMenu();
-                    }
-                })
-            } else {
-                console.log('\nNo tasks available to delete.');
-                showMenu();
-            }
-        }
-    })
+function listTasks(filter = null) {
+  const tasks = loadTasks();
+  const filteredTasks = filter ? tasks.filter((task) => task.status === filter) : tasks;
+  console.log(filteredTasks.length ? filteredTasks : "No tasks found.");
 }
 
-function showMenu() {
-    console.log("\nTask Tracker");
-    console.log("1. View Tasks");
-    console.log("2. Add Task");
-    console.log("3. Update Task Status")
-    console.log("4. Delete Task");
-    console.log("5. Exit");
-    rl.question(`Choose an option: `, handleMenu)
-}
-
-function handleMenu(choice) {
+function showCommands() {
     console.clear();
+    console.log(`======================================== Task App ========================================`)
+    console.log("Available Commands:");
+    console.log("1. add <task>        - Add a new task with the specified description.");
+    console.log("2. delete <taskId>   - Delete a task by its ID.");
+    console.log("3. update <taskId> <new task> - Update the description of a task by its ID.");
+    console.log("4. list               - List all tasks.");
+    console.log("5. list <status>      - List tasks filtered by status (e.g., 'completed', 'pending').");
+    console.log("6. help               - Show the available commands.");
+    console.log("7. quit               - Close the app");
 
-    switch (choice.trim()) {
-        case '1':
-            viewTask();
+  }
+
+
+  
+
+function handleMenu(command,...args){
+    switch (command) {
+        case "add":
+          addTask(args.join(" "));
+          break;
+        case "update":
+          updateTask(Number(args[0]), args.slice(1).join(" "));
+          break;
+        case "delete":
+          deleteTask(Number(args[0]));
+          break;
+        case "mark-in-progress":
+          markTask(Number(args[0]), "in-progress");
+          break;
+        case "mark-done":
+          markTask(Number(args[0]), "done");
+          break;
+        case "list":
+          listTasks(args[0]);
+          break;
+        case "help":
+            showCommands();
             break;
-        case '2':
-            addTask();
-            break;
-        case '3':
-            updateTaskStatus();
-            break;
-        case '4':
-            deleteTask();
-            break;
-        case '5':
-            console.log("Exiting...");
-            rl.close();
+        case "quit":
+            process.exit(0);
             break;
         default:
-            console.log("Invalid choice! Try again.");
-            showMenu();
-    }
+          console.log("Invalid command. Available commands: add, update, delete, mark-in-progress, mark-done, list");
+      }
 }
+
+
+// Function to parse input while preserving quoted text
+function parseInput(input) {
+  const regex = /"([^"]+)"|(\S+)/g; // Matches words or quoted text
+  let matches = [];
+  let match;
+
+  while ((match = regex.exec(input)) !== null) {
+    matches.push(match[1] ? match[1] : match[2]); // Remove quotes from captured groups
+  }
+
+  return matches;
+}
+
+// Function to read and process user input
+function readCommand() {
+  rl.question("task-cli :-> ", (input) => {
+    let args = parseInput(input);
+    let command = args[0];
+    let taskId = args.length > 1 ? args[1] : null;
+    let taskDescription = args.length > 2 ? args.slice(2).join(" ") : null;
+
+    handleMenu(command,taskId,taskDescription)
+    readCommand()
+  });
+}
+
+// Start CLI
+showCommands();
+readCommand();

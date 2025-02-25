@@ -1,12 +1,16 @@
 # Task Tracker CLI
 
-A simple command-line interface (CLI) application built using Node.js for managing tasks. This CLI allows users to view, add, update the status, and delete tasks from a `tasks.json` file. This project was built using core Node.js modules like `fs`, `readline`, and `crypto`.
+A simple command-line interface (CLI) application built using Node.js for managing tasks. This CLI allows users to view, add, update the status, and delete tasks from a `tasks.json` file. This project was built using core Node.js modules like `fs` and `readline`.
 
 ## Features
-- **View Tasks**: Display all the tasks with their status.
-- **Add Task**: Add new tasks with a title, description, and default status (`idle`).
-- **Update Task Status**: Update the status of a task to `idle`, `in progress`, or `completed`.
-- **Delete Task**: Delete a task by its number from the list.
+
+- Add a new task with a description
+- Update the description of an existing task
+- Delete a task by its ID
+- Mark a task as "in-progress" or "done"
+- List all tasks or filter them by their status (e.g., "todo", "in-progress", "done")
+- View available commands using the `help` command
+- Exit the application using the `quit` command
 
 ## Installation
 
@@ -48,11 +52,17 @@ A simple command-line interface (CLI) application built using Node.js for managi
 
 Once the app starts, you will see a menu with the following options:
 
-1. **View Tasks**: Displays the list of tasks with their status.
-2. **Add Task**: Allows you to add a new task with a title, description, and default status of `idle`.
-3. **Update Task Status**: Allows you to update the status of a task (idle, in progress, completed).
-4. **Delete Task**: Allows you to delete a task by selecting the task number.
-5. **Exit**: Exit the application.
+## Available commands:
+
+- **add <task>**: Add a new task with the specified description.
+- **update <taskId> <new task>**: Update the description of a task by its ID.
+- **delete <taskId>**: Delete a task by its ID.
+- **mark-in-progress <taskId>**: Mark a task as "in-progress".
+- **mark-done <taskId>**: Mark a task as "done".
+- **list**: List all tasks.
+- **list <status>**: List tasks filtered by status (e.g., "todo", "in-progress", "done").
+- **help**: Show the available commands.
+- **quit**: Close the app.
 
 ### Example:
 
@@ -66,11 +76,61 @@ Task Tracker
 Choose an option:
 ```
 
-- Upon selecting **1**, the list of tasks is displayed.
-- Upon selecting **2**, you can add a task by entering the title and description.
-- Upon selecting **3**, you can update a task's status by choosing its task number.
-- Upon selecting **4**, you can delete a task by its number.
+#### Add a task:
+```
+task-cli :-> add "Buy groceries"
+Task added successfully (ID:1)
+```
+#### update a task:
+```
+task-cli :-> update 1 "Buy groceries and fruits"
+Task updated successfully.
+```
+#### delete a task:
+```
+task-cli :-> delete 1
+Task deleted successfully.
 
+```
+
+#### Mark a task as in-progress:
+```
+task-cli :-> mark-in-progress 1
+Task marked as in-progress.
+
+```
+
+#### List all tasks:
+```
+task-cli :-> list
+[ { id: 1, description: 'Buy groceries', status: 'todo', createdAt: '...', updatedAt: '...' } ]
+
+```
+#### List tasks by status:
+```
+task-cli :-> list "in-progress"
+[ { id: 1, description: 'Buy groceries', status: 'in-progress', createdAt: '...', updatedAt: '...' } ]
+
+```
+#### Show help:
+```
+task-cli :-> help
+======================================== Task App ========================================
+Available Commands:
+1. add <task>        - Add a new task with the specified description.
+2. delete <taskId>   - Delete a task by its ID.
+3. update <taskId> <new task> - Update the description of a task by its ID.
+4. list               - List all tasks.
+5. list <status>      - List tasks filtered by status (e.g., 'completed', 'pending').
+6. help               - Show the available commands.
+7. quit               - Close the app
+
+```
+#### Exit the app:
+```
+task-cli :-> quit
+
+```
 ## Task File Format
 
 Tasks are stored in a `tasks.json` file in the following format:
@@ -78,26 +138,23 @@ Tasks are stored in a `tasks.json` file in the following format:
 ```json
 [
   {
-    "id": "random-unique-id",
+    "id": "1",
     "title": "Task Title",
     "description": "Task description",
-    "status": "idle"
+    "status": "todo"
   }
 ]
 ```
 
-## Contributing
+## Dependencies
 
-1. Fork the repository.
-2. Create a new branch (`git checkout -b feature-xyz`).
-3. Make your changes and commit them (`git commit -am 'Add feature xyz'`).
-4. Push to the branch (`git push origin feature-xyz`).
-5. Create a pull request.
+
+- fs - File system module (native Node.js)
+- path - Path module (native Node.js)
+- readline - Readline module (native Node.js)
 
 ## License
 
 This project is licensed under the ISC License.
 
 ---
-
-Let me know if you need any adjustments to this `README.md`!
